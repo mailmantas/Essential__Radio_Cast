@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Essential Radio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#0F131A;
+  --panel:#161C26;
+  --panel-2:#1D2531;
+  --raise:#263040;
+  --line:rgba(255,255,255,.085);
+  --line-2:rgba(255,255,255,.16);
+  --text:#D9E0EA;
+  --dim:#7A8796;
+  --dimmer:#4E5A68;
+  --hot:#FF6B2C;
+  --cool:#48D2C4;
+  box-sizing:border-box;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background-color:var(--void);
+  background-image:
+    linear-gradient(var(--line) 1px,transparent 1px),
+    linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:52px 52px;
+  background-position:-1px -1px;
+  color:var(--text);
+  font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:14px;line-height:1.5;
+  padding-top:env(safe-area-inset-top,0);
+  padding-bottom:env(safe-area-inset-bottom,0);
+}
+.wrap{max-width:1180px;margin:0 auto;padding:clamp(16px,2.6vw,32px) clamp(14px,2.6vw,30px) 60px}
+.lab{font-size:.67rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-weight:600}
+.mono-num{font-variant-numeric:tabular-nums}
+
+/* masthead */
+.mast{display:flex;flex-wrap:wrap;gap:14px 26px;align-items:flex-end;justify-content:space-between;
+  border-bottom:1px solid var(--line-2);padding-bottom:14px}
+h1{margin:0;font-size:clamp(1.7rem,5vw,3.1rem);font-weight:700;letter-spacing:-.035em;line-height:.95}
+h1 .dot{color:var(--hot)}
+.sub{margin:7px 0 0;color:var(--dim);font-size:.84rem;letter-spacing:.04em}
+.mast-r{display:flex;gap:clamp(14px,2.4vw,30px);align-items:flex-end}
+.stat .v{font-size:1.05rem;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.1}
+.stat .v.hot{color:var(--hot)}
+.onair{display:inline-flex;align-items:center;gap:8px}
+.led{width:8px;height:8px;border-radius:50%;background:var(--dimmer);flex:0 0 auto}
+.live .led{background:var(--hot);box-shadow:0 0 10px 1px rgba(255,107,44,.85);animation:blink 2.2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* panels */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:4px}
+.phead{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:9px 14px;border-bottom:1px solid var(--line);background:var(--panel-2);flex-wrap:wrap}
+
+/* boot / error */
+#boot{margin-top:22px;padding:34px 18px;text-align:center;color:var(--dim)}
+.prog{max-width:320px;height:2px;background:var(--raise);margin:16px auto 0;overflow:hidden}
+.prog i{display:block;height:100%;width:35%;background:var(--hot);animation:slide 1.3s ease-in-out infinite}
+@keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(385%)}}
+#boot b{color:var(--text);font-weight:600}
+.err{border-color:rgba(255,107,44,.45)}
+.err .phead{background:rgba(255,107,44,.1)}
+
+/* now playing */
+.now{margin-top:22px}
+.np-body{padding:clamp(16px,2.4vw,26px)}
+.np-artist{font-size:clamp(1.5rem,4.4vw,2.6rem);font-weight:700;letter-spacing:-.03em;line-height:1.05;margin:0;overflow-wrap:anywhere}
+.np-meta{display:flex;flex-wrap:wrap;gap:6px 20px;margin-top:10px;color:var(--dim);font-size:.84rem}
+.np-meta b{color:var(--cool);font-weight:500}
+
+/* bars */
+.bars{display:flex;align-items:flex-end;gap:2px;height:46px;margin-top:18px}
+.bars i{flex:1;background:var(--raise);min-height:2px;border-radius:0}
+.bars i.a{background:var(--hot)}
+
+/* seek */
+.seek{margin-top:16px;height:22px;position:relative;cursor:pointer;display:flex;align-items:center}
+.seek-t{height:3px;width:100%;background:var(--raise);position:relative;overflow:hidden}
+.seek-f{position:absolute;inset:0 auto 0 0;width:0;background:var(--hot)}
+.seek-b{position:absolute;inset:0 auto 0 0;width:0;background:var(--line-2)}
+.tmrow{display:flex;justify-content:space-between;margin-top:3px;font-size:.78rem;color:var(--dim);font-variant-numeric:tabular-nums}
+
+/* transport */
+.tr{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:18px}
+.btn{appearance:none;border:1px solid var(--line-2);background:var(--panel-2);color:var(--text);
+  font:inherit;font-size:.8rem;font-weight:600;letter-spacing:.11em;text-transform:uppercase;
+  padding:9px 15px;border-radius:3px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.btn:hover{border-color:var(--dim);background:var(--raise)}
+.btn.pri{background:var(--hot);border-color:var(--hot);color:#140A04}
+.btn.pri:hover{filter:brightness(1.1)}
+.btn.linked{background:var(--cool);border-color:var(--cool);color:#06201D}
+.btn.linked:hover{filter:brightness(1.08);background:var(--cool)}
+#castrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn[hidden]{display:none}
+.btn svg{width:13px;height:13px;fill:currentColor}
+.volwrap{display:flex;align-items:center;gap:9px;margin-left:auto}
+input[type=range]{-webkit-appearance:none;appearance:none;width:110px;height:18px;background:transparent;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:3px;background:var(--raise)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:5px;height:16px;margin-top:-6px;background:var(--hot);border-radius:0}
+input[type=range]::-moz-range-track{height:3px;background:var(--raise)}
+input[type=range]::-moz-range-thumb{border:0;width:5px;height:16px;background:var(--hot);border-radius:0}
+.msg{margin-top:12px;font-size:.82rem;color:var(--dim);min-height:1.4em}
+.msg b{color:var(--hot);font-weight:600}
+
+/* 24h strip */
+.strip-wrap{padding:16px 14px 12px}
+.ticks{display:flex;font-size:.65rem;color:var(--dimmer);font-variant-numeric:tabular-nums;margin-bottom:5px}
+.ticks span{flex:1;border-left:1px solid var(--line);padding-left:3px}
+.strip{position:relative;height:40px;display:flex;background:var(--void);border:1px solid var(--line);overflow:hidden}
+.strip b{display:block;height:100%;border-right:1px solid var(--void);background:var(--raise);cursor:pointer;min-width:1px}
+.strip b:nth-child(even){background:#2C3749}
+.strip b.on{background:var(--hot)}
+.strip b:hover{background:var(--cool)}
+.head{position:absolute;top:0;bottom:0;width:2px;background:#fff;box-shadow:0 0 8px rgba(255,255,255,.8);pointer-events:none}
+.strip-f{display:flex;justify-content:space-between;margin-top:7px;font-size:.74rem;color:var(--dim);gap:12px;flex-wrap:wrap}
+
+/* schedule + index */
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;margin-top:18px}
+@media(max-width:900px){.cols{grid-template-columns:1fr}}
+.scroll{max-height:440px;overflow-y:auto}
+.scroll::-webkit-scrollbar{width:9px}
+.scroll::-webkit-scrollbar-track{background:var(--void)}
+.scroll::-webkit-scrollbar-thumb{background:var(--raise)}
+.row{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:12px;align-items:baseline;
+  padding:8px 14px;border-bottom:1px solid var(--line);cursor:pointer;width:100%;text-align:left;
+  background:none;border-left:0;border-right:0;border-top:0;color:inherit;font:inherit}
+.row:hover{background:var(--panel-2)}
+.row .t{color:var(--dim);font-size:.78rem;font-variant-numeric:tabular-nums}
+.row .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.87rem}
+.row .n i{font-style:normal;color:var(--dimmer)}
+.row .d{color:var(--dimmer);font-size:.75rem;font-variant-numeric:tabular-nums}
+.row.on{background:rgba(255,107,44,.11)}
+.row.on .t{color:var(--hot)}
+.row.past .n,.row.past .t{opacity:.42}
+
+/* search */
+.search{display:flex;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.search input[type=text]{flex:1;min-width:140px;background:var(--void);border:1px solid var(--line-2);color:var(--text);
+  font:inherit;font-size:.85rem;padding:7px 10px;border-radius:3px}
+.search input[type=text]:focus{outline:none;border-color:var(--hot)}
+.search select{background:var(--void);border:1px solid var(--line-2);color:var(--text);font:inherit;font-size:.85rem;padding:7px 8px;border-radius:3px}
+.btn:focus-visible,.row:focus-visible,.seek:focus-visible,.strip b:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--hot);outline-offset:2px}
+
+footer{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);color:var(--dim);font-size:.8rem;max-width:80ch;font-family:"IBM Plex Sans",sans-serif;line-height:1.6}
+footer a{color:var(--cool)}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="mast">
+    <div>
+      <h1>ESSENTIAL RADIO<span class="dot">.</span></h1>
+      <p class="sub" id="sub">BBC Essential Mix archive · continuous transmission</p>
+    </div>
+    <div class="mast-r">
+      <div class="stat">
+        <div class="lab">Status</div>
+        <div class="v onair" id="onair"><span class="led"></span><span id="onair-t">Standby</span></div>
+      </div>
+      <div class="stat">
+        <div class="lab">UTC</div>
+        <div class="v mono-num" id="utc">--:--:--</div>
+      </div>
+      <div class="stat">
+        <div class="lab">Local</div>
+        <div class="v mono-num" id="loc">--:--:--</div>
+      </div>
+    </div>
+  </header>
+
+  <div id="boot">
+    <div class="lab">Loading catalogue</div>
+    <p style="margin:10px 0 0">Reading the archive manifest — <b id="bootn">about 1,400 mixes</b></p>
+    <div class="prog"><i></i></div>
+  </div>
+
+  <div id="app" hidden>
+
+    <section class="panel now">
+      <div class="phead">
+        <span class="lab">Now transmitting</span>
+        <span class="lab mono-num" id="slotlab">—</span>
+      </div>
+      <div class="np-body">
+        <h2 class="np-artist" id="np-artist">—</h2>
+        <div class="np-meta">
+          <span>Broadcast <b id="np-date">—</b></span>
+          <span>Duration <b id="np-dur">—</b></span>
+          <span>Size <b id="np-size">—</b></span>
+        </div>
+
+        <div class="bars" id="bars" aria-hidden="true"></div>
+
+        <div class="seek" id="seek" role="slider" tabindex="0" aria-label="Position in mix" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="seek-t"><div class="seek-b" id="seekb"></div><div class="seek-f" id="seekf"></div></div>
+        </div>
+        <div class="tmrow"><span id="t-cur">0:00:00</span><span id="t-rem">—</span></div>
+
+        <div class="tr">
+          <button class="btn pri" id="play"><svg viewBox="0 0 24 24" id="pico"><path d="M6 4l14 8-14 8z"/></svg><span id="plab">Tune in</span></button>
+          <button class="btn" id="next">Skip</button>
+          <button class="btn" id="rejoin" hidden>Rejoin schedule</button>
+          <button class="btn" id="cast" hidden><svg viewBox="0 0 24 24"><path d="M1 18v3h3c0-1.66-1.34-3-3-3zm0-4v2c2.76 0 5 2.24 5 5h2c0-3.87-3.13-7-7-7zm0-4v2c4.97 0 9 4.03 9 9h2c0-6.08-4.93-11-11-11zM21 3H3v3h18v12h-7v3h7a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg><span id="castlab">Cast</span></button>
+          <button class="btn" id="airplay" hidden><svg viewBox="0 0 24 24"><path d="M6 22h12l-6-6zM21 3H3a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4v-2H3V5h18v12h-4v2h4a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg>AirPlay</button>
+          <div class="volwrap"><span class="lab">Vol</span><input type="range" id="vol" min="0" max="100" value="80" aria-label="Volume"></div>
+        </div>
+        <p class="msg" id="msg"></p>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top:18px">
+      <div class="phead">
+        <span class="lab">Transmission schedule · 24h UTC</span>
+        <span class="lab mono-num" id="daylab">—</span>
+      </div>
+      <div class="strip-wrap">
+        <div class="ticks" id="ticks"></div>
+        <div class="strip" id="strip"><div class="head" id="head" style="left:0"></div></div>
+        <div class="strip-f">
+          <span>Each block is one mix. The schedule reshuffles at 00:00 UTC.</span>
+          <span class="mono-num" id="stripinfo">—</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="cols">
+      <section class="panel">
+        <div class="phead"><span class="lab">Today's running order</span><span class="lab" id="schcount">—</span></div>
+        <div class="scroll" id="sched"></div>
+      </section>
+
+      <section class="panel">
+        <div class="phead"><span class="lab">Full archive index</span><span class="lab" id="idxcount">—</span></div>
+        <div class="search">
+          <input type="text" id="q" placeholder="Search artist…" autocomplete="off" spellcheck="false">
+          <select id="yr"><option value="">All years</option></select>
+        </div>
+        <div class="scroll" id="index"></div>
+      </section>
+    </div>
+
+  </div>
+
+  <footer>
+    <p>Audio streams directly from the <a href="https://archive.org/details/BBC_Essential_Mix_Collection" target="_blank" rel="noopener">Techno BBC Essential Mix Collection</a> on the Internet Archive. The catalogue is read live from archive.org's metadata API each time the page loads, so track lengths are exact rather than estimated and the station picks up any files added to the item. Mixes average around two hours, so expect a few seconds of buffering when one starts.</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+var ITEM = "BBC_Essential_Mix_Collection";
+var META = "https://archive.org/metadata/" + ITEM;
+var DL   = "https://archive.org/download/" + ITEM + "/";
+var DAY  = 86400;
+
+var $ = function(i){ return document.getElementById(i); };
+var TRACKS = [], order = [], sched = [], dayKey = null;
+var audio = new Audio(); audio.preload = "auto"; audio.volume = .8;
+audio.setAttribute("x-webkit-airplay","allow");
+audio.style.display = "none";
+document.addEventListener("DOMContentLoaded", function(){ document.body.appendChild(audio); });
+var idx = -1, synced = true, started = false, fails = 0;
+
+/* ---------- output routing: this device vs a cast receiver ---------- */
+var CS = { on:false, ready:false, ctx:null, player:null, ctrl:null, device:"", playing:false };
+function T_paused(){ return CS.on ? (CS.player ? !!CS.player.isPaused : true) : audio.paused; }
+function T_time(){ return CS.on ? ((CS.player && CS.player.currentTime) || 0) : (audio.currentTime || 0); }
+function T_dur(){
+  var t = TRACKS[idx], fb = t ? t.secs : 0;
+  if(CS.on) return (CS.player && CS.player.duration > 0) ? CS.player.duration : fb;
+  return (isFinite(audio.duration) && audio.duration > 0) ? audio.duration : fb;
+}
+function T_seek(sec){
+  if(CS.on){ if(CS.player && CS.ctrl){ CS.player.currentTime = sec; CS.ctrl.seek(); } return; }
+  audio.currentTime = sec;
+}
+
+/* ---------- parsing: filenames here are wildly inconsistent ---------- */
+function parse(f){
+  var s = f.name.replace(/\.mp3$/i, ""), y=null, m=null, d=null, mm;
+  mm = s.match(/(19|20)(\d{2})[-_.](\d{1,2})[-_.](\d{1,2})/);           // YYYY-MM-DD
+  if(mm){ y = +(mm[1]+mm[2]); m = +mm[3]; d = +mm[4]; s = s.replace(mm[0]," "); }
+  else {
+    mm = s.match(/\b(\d{1,2})[-_.](\d{1,2})[-_.]((?:19|20)\d{2})\b/);    // MM-DD-YYYY
+    if(mm){ m = +mm[1]; d = +mm[2]; y = +mm[3]; s = s.replace(mm[0]," "); }
+    else { mm = s.match(/\b(19[89]\d|20[0-2]\d)\b/); if(mm){ y = +mm[1]; s = s.replace(mm[0]," "); } }
+  }
+  s = s.replace(/www\.[a-z0-9.-]+\.(com|net|org|co\.uk)/gi," ")
+       .replace(/\btalion\b/gi," ")
+       .replace(/essential[\s_-]*mix(es)?/gi," ")
+       .replace(/\b(sat|sun|mon|tue|wed|thu|fri)\b/gi," ")
+       .replace(/\b(bbc|radio\s*1|radio1)\b/gi," ")
+       .replace(/^\s*\d{1,3}[-_.\s]+/," ")
+       .replace(/[\[\]()_]/g," ")
+       .replace(/\s*-\s*/g," ")
+       .replace(/\s+/g," ")
+       .replace(/^[\s\-,.]+|[\s\-,.]+$/g,"")
+       .trim();
+  if(s.length < 2 || s.length > 70) s = f.name.replace(/\.mp3$/i,"").replace(/[_-]+/g," ").slice(0,60);
+  s = s.replace(/\b[a-z]/g, function(c){ return c.toUpperCase(); });
+  return { f:f.name, a:s, y:y, m:m, d:d, secs:parseFloat(f.length)||0, size:+f.size||0 };
+}
+
+/* ---------- deterministic daily shuffle ---------- */
+function rng(seed){ return function(){ seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+  var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+  t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+  return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+function buildDay(force){
+  var key = Math.floor(Date.now() / 86400000);
+  if(key === dayKey && !force) return;
+  dayKey = key;
+  var r = rng(key * 2654435761 % 2147483647), i, j, t;
+  order = TRACKS.map(function(_,n){ return n; });
+  for(i = order.length - 1; i > 0; i--){ j = Math.floor(r() * (i+1)); t = order[i]; order[i] = order[j]; order[j] = t; }
+  sched = []; var acc = 0, k = 0;
+  while(acc < DAY && k < order.length){
+    var tr = TRACKS[order[k]];
+    if(tr.secs > 60){ sched.push({ i:order[k], start:acc, secs:tr.secs }); acc += tr.secs; }
+    k++;
+  }
+  renderStrip(); renderSched();
+  $("daylab").textContent = new Date(key*86400000).toISOString().slice(0,10);
+}
+function utcSecs(){ var n = new Date(); return n.getUTCHours()*3600 + n.getUTCMinutes()*60 + n.getUTCSeconds() + n.getUTCMilliseconds()/1000; }
+function slotNow(){
+  var s = utcSecs(), i;
+  for(i=0;i<sched.length;i++) if(s >= sched[i].start && s < sched[i].start + sched[i].secs)
+    return { k:i, i:sched[i].i, off: s - sched[i].start };
+  return sched.length ? { k:sched.length-1, i:sched[sched.length-1].i, off:0 } : null;
+}
+
+/* ---------- time helpers ---------- */
+function hms(s){ s = Math.max(0, Math.floor(s||0));
+  var h = Math.floor(s/3600), m = Math.floor(s%3600/60), x = s%60;
+  return h + ":" + ("0"+m).slice(-2) + ":" + ("0"+x).slice(-2); }
+function clock(s){ s = Math.floor(s)%DAY; return ("0"+Math.floor(s/3600)).slice(-2) + ":" + ("0"+Math.floor(s%3600/60)).slice(-2); }
+function mb(b){ return (b/1048576).toFixed(0) + " MB"; }
+
+/* ---------- playback ---------- */
+function load(i, off, go){
+  idx = i; var t = TRACKS[i];
+  if(CS.on){ castLoad(i, off, go); paintNow(); renderSched(); renderStrip(); return; }
+  audio.src = DL + encodeURIComponent(t.f);
+  audio.load();
+  if(off > 0){
+    var seek = function(){ audio.removeEventListener("loadedmetadata", seek);
+      var d = isFinite(audio.duration) ? audio.duration : t.secs;
+      if(d) audio.currentTime = Math.min(off, Math.max(0, d - 4)); };
+    audio.addEventListener("loadedmetadata", seek);
+  }
+  paintNow(); renderSched(); renderStrip();
+  if(go) play();
+}
+function play(){ var p = audio.play(); if(p && p.catch) p.catch(function(){ setMsg("Playback was blocked by the browser. Press tune in again."); }); }
+function joinSchedule(go){ buildDay(); var s = slotNow(); if(!s) return; synced = true; setSync(); load(s.i, s.off, go); }
+function advance(){
+  if(synced){ buildDay(); var s = slotNow();
+    if(s && s.i !== idx){ load(s.i, s.off, true); return; }
+    var k = s ? s.k + 1 : 0;
+    if(k < sched.length){ load(sched[k].i, 0, true); return; } }
+  var n = order.indexOf(idx); load(order[(n+1) % order.length] , 0, true);
+}
+audio.addEventListener("playing", function(){ fails = 0; setMsg(""); setLive(true); setPlay(true); });
+audio.addEventListener("pause",  function(){ setLive(false); setPlay(false); });
+audio.addEventListener("waiting", function(){ setMsg("Buffering — two-hour files take a moment."); });
+audio.addEventListener("ended", advance);
+audio.addEventListener("error", function(){
+  if(!audio.src) return; fails++;
+  if(fails >= 5){ setMsg("Nothing is loading. Archive.org may be unreachable from this network."); return; }
+  setMsg("That file wouldn't load. Skipping."); setTimeout(advance, 1400);
+});
+
+/* ---------- paint ---------- */
+function setMsg(m){ $("msg").innerHTML = ""; $("msg").appendChild(document.createTextNode(m || (synced ? "Locked to the UTC schedule." : "Off schedule — playing independently."))); }
+function setLive(on){ $("onair").classList.toggle("live", !!on); $("onair-t").textContent = on ? (synced ? "On air" : "Off sched") : "Standby"; }
+function setPlay(on){ $("plab").textContent = on ? "Pause" : (started ? "Play" : "Tune in");
+  $("pico").innerHTML = on ? '<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>' : '<path d="M6 4l14 8-14 8z"/>'; }
+function setSync(){ $("rejoin").hidden = synced; setMsg(""); setLive(!T_paused()); }
+function paintNow(){
+  var t = TRACKS[idx]; if(!t) return;
+  $("np-artist").textContent = t.a;
+  $("np-date").textContent = t.y ? (t.y + (t.m ? "-" + ("0"+t.m).slice(-2) + (t.d ? "-" + ("0"+t.d).slice(-2) : "") : "")) : "unknown";
+  $("np-dur").textContent = hms(t.secs);
+  $("np-size").textContent = mb(t.size);
+  var s = slotNow();
+  $("slotlab").textContent = s ? ("Slot " + (s.k+1) + " / " + sched.length) : "—";
+}
+function renderStrip(){
+  var strip = $("strip");
+  while(strip.children.length > 1) strip.removeChild(strip.lastChild);
+  if(!$("ticks").childElementCount){
+    for(var h=0;h<24;h+=2){ var sp = document.createElement("span"); sp.textContent = ("0"+h).slice(-2); $("ticks").appendChild(sp); }
+  }
+  sched.forEach(function(s, k){
+    var b = document.createElement("b");
+    b.style.flex = s.secs;
+    b.className = (s.i === idx ? "on" : "");
+    b.title = TRACKS[s.i].a + " · " + clock(s.start);
+    b.onclick = function(){ pick(s.i); };
+    strip.appendChild(b);
+  });
+  var covered = sched.length ? sched[sched.length-1].start + sched[sched.length-1].secs : 0;
+  $("stripinfo").textContent = sched.length + " mixes · " + hms(covered) + " programmed";
+}
+function renderSched(){
+  var box = $("sched"); box.innerHTML = "";
+  var nowS = utcSecs();
+  sched.forEach(function(s, k){
+    var t = TRACKS[s.i];
+    var b = document.createElement("button");
+    b.className = "row" + (s.i === idx ? " on" : "") + (s.start + s.secs < nowS ? " past" : "");
+    var c1 = document.createElement("span"); c1.className = "t"; c1.textContent = clock(s.start);
+    var c2 = document.createElement("span"); c2.className = "n"; c2.textContent = t.a;
+    var c3 = document.createElement("span"); c3.className = "d"; c3.textContent = hms(t.secs).replace(/^0:/,"");
+    b.appendChild(c1); b.appendChild(c2); b.appendChild(c3);
+    b.onclick = function(){ pick(s.i); };
+    box.appendChild(b);
+  });
+  $("schcount").textContent = sched.length + " mixes";
+}
+function pick(i){ synced = false; setSync(); started = true; load(i, 0, true); }
+
+/* ---------- archive index ---------- */
+var qv = "", yv = "";
+function renderIndex(){
+  var box = $("index"); box.innerHTML = "";
+  var q = qv.toLowerCase(), n = 0, CAP = 150, total = 0;
+  for(var i=0;i<TRACKS.length;i++){
+    var t = TRACKS[i];
+    if(yv && String(t.y) !== yv) continue;
+    if(q && t.a.toLowerCase().indexOf(q) < 0) continue;
+    total++;
+    if(n >= CAP) continue;
+    n++;
+    (function(i,t){
+      var b = document.createElement("button");
+      b.className = "row" + (i === idx ? " on" : "");
+      var c1 = document.createElement("span"); c1.className = "t"; c1.textContent = t.y || "—";
+      var c2 = document.createElement("span"); c2.className = "n"; c2.textContent = t.a;
+      var c3 = document.createElement("span"); c3.className = "d"; c3.textContent = hms(t.secs).replace(/^0:/,"");
+      b.appendChild(c1); b.appendChild(c2); b.appendChild(c3);
+      b.onclick = function(){ pick(i); };
+      box.appendChild(b);
+    })(i, t);
+  }
+  $("idxcount").textContent = total + (total > CAP ? " hits · showing " + CAP : " mixes");
+}
+
+/* ---------- loop ---------- */
+var BARS = 56, barEls = [], lvl = [];
+(function(){ var f = document.createDocumentFragment();
+  for(var i=0;i<BARS;i++){ var b = document.createElement("i"); f.appendChild(b); barEls.push(b); lvl.push(.2); }
+  $("bars").appendChild(f); })();
+var last = 0;
+function frame(ts){
+  var dt = last ? Math.min(.1,(ts-last)/1000) : 0; last = ts;
+  var d = T_dur();
+  var cur = T_time();
+  var p = d ? Math.max(0, Math.min(1, cur/d)) : 0;
+
+  $("seekf").style.width = (p*100).toFixed(2) + "%";
+  $("seek").setAttribute("aria-valuenow", Math.round(p*100));
+  if(CS.on){ $("seekb").style.width = "0%"; }
+  else { try{ if(audio.buffered.length) $("seekb").style.width = Math.min(100,(audio.buffered.end(audio.buffered.length-1)/d)*100).toFixed(1) + "%"; }catch(e){} }
+  $("t-cur").textContent = hms(cur);
+  $("t-rem").textContent = d ? "-" + hms(d-cur) : "—";
+
+  // decorative level array, driven by position — not a spectrum reading
+  for(var i=0;i<BARS;i++){
+    var target;
+    if(T_paused()) target = .04;
+    else {
+      var ph = cur*2.2 + i*.38;
+      target = .30 + .34*Math.abs(Math.sin(ph)) + .22*Math.abs(Math.sin(ph*.37 + i)) ;
+      target *= 1 - (i/BARS)*.35;
+      target += Math.random()*.09;
+    }
+    lvl[i] += (target - lvl[i]) * Math.min(1, dt*11);
+    var h = Math.max(2, Math.min(46, lvl[i]*46));
+    barEls[i].style.height = h.toFixed(1) + "px";
+    barEls[i].className = lvl[i] > .52 ? "a" : "";
+  }
+
+  var ss = utcSecs();
+  $("head").style.left = (ss/DAY*100).toFixed(3) + "%";
+  requestAnimationFrame(frame);
+}
+
+setInterval(function(){
+  var n = new Date();
+  $("utc").textContent = n.toISOString().slice(11,19);
+  $("loc").textContent = ("0"+n.getHours()).slice(-2)+":"+("0"+n.getMinutes()).slice(-2)+":"+("0"+n.getSeconds()).slice(-2);
+  if(TRACKS.length){
+    var prev = dayKey; buildDay();
+    if(prev !== dayKey && synced) joinSchedule(!T_paused());
+    if(synced && !T_paused()){
+      var s = slotNow();
+      if(s && s.i !== idx) load(s.i, s.off, true);
+    }
+  }
+}, 1000);
+
+/* ---------- controls ---------- */
+$("play").onclick = function(){
+  if(!started){ started = true; setMsg("Joining transmission…"); joinSchedule(true); return; }
+  if(CS.on){ if(CS.ctrl) CS.ctrl.playOrPause(); return; }
+  if(audio.paused) play(); else audio.pause();
+};
+$("next").onclick = function(){ synced = false; setSync(); started = true; advance(); };
+$("rejoin").onclick = function(){ started = true; joinSchedule(true); };
+$("vol").oninput = function(){ audio.volume = this.value/100; };
+$("seek").onclick = function(e){
+  var d = T_dur(); if(!d) return;
+  var r = this.getBoundingClientRect();
+  synced = false; setSync();
+  T_seek(Math.max(0, Math.min(1,(e.clientX-r.left)/r.width)) * d);
+};
+var qt;
+$("q").oninput = function(){ clearTimeout(qt); var v = this.value; qt = setTimeout(function(){ qv = v; renderIndex(); }, 180); };
+$("yr").onchange = function(){ yv = this.value; renderIndex(); };
+
+/* ---------- Chromecast ---------- */
+function castLoad(i, off, go){
+  var s = CS.ctx && CS.ctx.getCurrentSession(); if(!s) return;
+  var t = TRACKS[i];
+  var mi = new chrome.cast.media.MediaInfo(DL + encodeURIComponent(t.f), "audio/mpeg");
+  mi.streamType = chrome.cast.media.StreamType.BUFFERED;
+  mi.duration = t.secs;
+  var md = new chrome.cast.media.MusicTrackMediaMetadata();
+  md.title = t.a;
+  md.artist = "Essential Mix" + (t.y ? " \u00b7 " + t.y : "");
+  md.albumName = "Essential Radio";
+  mi.metadata = md;
+  var req = new chrome.cast.media.LoadRequest(mi);
+  req.currentTime = Math.max(0, off || 0);
+  req.autoplay = go !== false;
+  s.loadMedia(req).then(function(){ setMsg("Casting to " + CS.device + "."); },
+                        function(err){ setMsg("The receiver refused that file (" + err + ")."); });
+}
+function onCastStart(){
+  if(CS.on) return;
+  var at = audio.currentTime || 0, wasPlaying = !audio.paused;
+  audio.pause(); audio.removeAttribute("src"); audio.load();
+  CS.on = true; CS.playing = false;
+  var s = CS.ctx.getCurrentSession();
+  CS.device = (s && s.getCastDevice && s.getCastDevice() && s.getCastDevice().friendlyName) || "the receiver";
+  $("cast").classList.add("linked"); $("castlab").textContent = "Stop casting";
+  if(idx < 0){ var sl = slotNow(); if(sl) idx = sl.i; }
+  if(idx >= 0) castLoad(idx, at, wasPlaying || started);
+  started = true; setPlay(true); setLive(true);
+}
+function onCastEnd(){
+  if(!CS.on) return;
+  var at = (CS.player && CS.player.currentTime) || 0;
+  CS.on = false; CS.playing = false;
+  $("cast").classList.remove("linked"); $("castlab").textContent = "Cast";
+  setMsg("Cast ended \u2014 output back on this device.");
+  if(idx >= 0) load(idx, at, false);
+  setPlay(false); setLive(false);
+}
+window.__onGCastApiAvailable = function(ok){
+  if(!ok || !window.cast || !window.cast.framework || !window.chrome || !chrome.cast) return;
+  var F = cast.framework;
+  try{
+    CS.ctx = F.CastContext.getInstance();
+    CS.ctx.setOptions({
+      receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
+      autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
+    });
+    CS.player = new F.RemotePlayer();
+    CS.ctrl = new F.RemotePlayerController(CS.player);
+    CS.ready = true;
+    CS.ctx.addEventListener(F.CastContextEventType.CAST_STATE_CHANGED, function(e){ castBtnState(e.castState); });
+    CS.ctrl.addEventListener(F.RemotePlayerEventType.IS_CONNECTED_CHANGED, function(){
+      if(CS.player.isConnected) onCastStart(); else onCastEnd();
+    });
+    CS.ctrl.addEventListener(F.RemotePlayerEventType.PLAYER_STATE_CHANGED, function(){
+      if(!CS.on) return;
+      var st = CS.player.playerState;
+      if(st === chrome.cast.media.PlayerState.PLAYING){ CS.playing = true; setPlay(true); setLive(true); }
+      if(st === chrome.cast.media.PlayerState.PAUSED){ setPlay(false); }
+      if(CS.playing && st === chrome.cast.media.PlayerState.IDLE){ CS.playing = false; advance(); }
+    });
+    castBtnState(CS.ctx.getCastState());
+  }catch(e){ CS.ready = false; }
+};
+/* Always surface the button once the SDK is up; grey it out when nothing is discoverable,
+   so the feature is visible rather than silently absent. */
+function castBtnState(st){
+  var b = $("cast"), none = (st === "NO_DEVICES_AVAILABLE");
+  b.hidden = false;
+  b.disabled = none;
+  b.style.opacity = none ? ".42" : "";
+  b.style.cursor = none ? "default" : "pointer";
+  b.title = none ? "No cast devices found on this network" :
+            (st === "CONNECTED" ? "Stop casting" : "Cast to a device on this network");
+  if(st !== "CONNECTED"){ b.classList.remove("linked"); $("castlab").textContent = none ? "No devices" : "Cast"; }
+}
+$("cast").onclick = function(){
+  if(!CS.ready) return;
+  if(CS.ctx.getCurrentSession()) CS.ctx.endCurrentSession(true);
+  else CS.ctx.requestSession().catch(function(){});
+};
+
+/* ---------- AirPlay (Safari) ---------- */
+if(window.WebKitPlaybackTargetAvailabilityEvent){
+  audio.addEventListener("webkitplaybacktargetavailabilitychanged", function(e){
+    $("airplay").hidden = (e.availability !== "available");
+  });
+  $("airplay").onclick = function(){
+    if(audio.webkitShowPlaybackTargetPicker) audio.webkitShowPlaybackTargetPicker();
+  };
+}
+
+/* ---------- boot ---------- */
+fetch(META).then(function(r){
+  if(!r.ok) throw new Error("HTTP " + r.status);
+  return r.json();
+}).then(function(j){
+  var files = (j.files||[]).filter(function(f){ return /\.mp3$/i.test(f.name) && (parseFloat(f.length)||0) > 300; });
+  if(!files.length) throw new Error("no audio files in manifest");
+  TRACKS = files.map(parse);
+  var ys = {}; TRACKS.forEach(function(t){ if(t.y) ys[t.y] = 1; });
+  Object.keys(ys).sort().forEach(function(y){ var o = document.createElement("option"); o.value = y; o.textContent = y; $("yr").appendChild(o); });
+  var hrs = TRACKS.reduce(function(a,t){ return a + t.secs; },0)/3600;
+  $("sub").textContent = TRACKS.length.toLocaleString() + " mixes · " + Math.round(hrs).toLocaleString() + " hours · reshuffled daily";
+  $("boot").hidden = true; $("app").hidden = false;
+  buildDay(); var s = slotNow(); if(s){ idx = s.i; paintNow(); renderStrip(); renderSched(); }
+  renderIndex(); setPlay(false); setMsg("");
+  requestAnimationFrame(frame);
+}).catch(function(e){
+  $("boot").innerHTML = '<div class="lab" style="color:var(--hot)">Catalogue unavailable</div>' +
+    '<p style="margin:10px 0 0">Could not read the archive manifest: ' + String(e.message||e).replace(/[<>]/g,"") + '</p>' +
+    '<p style="margin:8px 0 0;color:var(--dimmer)">If you are viewing this as a local file, some browsers block the request. Serving it over http:// or https:// fixes it.</p>';
+  $("boot").className = "panel err"; $("boot").style.padding = "26px 18px";
+});
+
+})();
+</script>
+<script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
+</body>
+</html>
